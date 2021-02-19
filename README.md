@@ -35,3 +35,9 @@ For KUZNECHIK
 cmake -DKUZNECHIK=ON
 ```
 
+### Example
+
+Folder "test/" has one exaple with:
+- Low leve encrypter
+- High level encrypter
+- High leve decrypter
