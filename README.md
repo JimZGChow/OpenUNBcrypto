@@ -21,8 +21,11 @@ sudo make install
 
 For the choose crypto algorithm use:
 For AES128
-`cmake -DAES128=ON`
+```cmake -DAES128=ON```
+
 For MAGMA
-`cmake -DMAGMA=ON`
+```cmake -DMAGMA=ON```
+
 For KUZNECHIK
-`cmake -DKUZNECHIK=ON`
+```cmake -DKUZNECHIK=ON```
+
