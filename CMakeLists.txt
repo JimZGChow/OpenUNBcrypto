@@ -7,7 +7,7 @@ link_libraries(akrypt-base)
 link_libraries(crypto)
 
 OPTION(AES128 "AES128 encrypt" ON)
-#OPTION(AES256 "AES256 encrypt" OFF)
+OPTION(AES256 "AES256 encrypt" ON)
 OPTION(KUZNECHIK "KUZNECHIK encrypt" OFF)
 OPTION(MAGMA "MAGMA encrypt" OFF)
 
@@ -17,6 +17,10 @@ IF(AES128)
     remove_definitions(-DAES256)
     remove_definitions(-DKUZNECHIK)
     remove_definitions(-DMAGMA)
+
+    set(AES256 OFF)
+    set(KUZNECHIK OFF)
+    set(MAGMA OFF)
 ENDIF(AES128)
 
 IF(AES256)
@@ -25,6 +29,10 @@ IF(AES256)
     remove_definitions(-DAES128)
     remove_definitions(-DKUZNECHIK)
     remove_definitions(-DMAGMA)
+
+    set(AES128 OFF)
+    set(KUZNECHIK OFF)
+    set(MAGMA OFF)
 ENDIF(AES256)
 
 IF(KUZNECHIK)
@@ -33,6 +41,10 @@ IF(KUZNECHIK)
     remove_definitions(-DAES128)
     remove_definitions(-DAES256)
     remove_definitions(-DMAGMA)
+
+    set(AES256 OFF)
+    set(AES128 OFF)
+    set(MAGMA OFF)
 ENDIF(KUZNECHIK)
 
 IF(MAGMA)
@@ -41,6 +53,10 @@ IF(MAGMA)
     remove_definitions(-DAES128)
     remove_definitions(-DKUZNECHIK)
     remove_definitions(-DAES258)
+
+    set(AES256 OFF)
+    set(KUZNECHIK OFF)
+    set(AES128 OFF)
 ENDIF(MAGMA)
 
 add_library(openUNBCryptLib SHARED  "src/aes.cpp" "includePrivate/aes.h"
