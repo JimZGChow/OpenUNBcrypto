@@ -1,13 +1,13 @@
-###Introducton
+##Introducton
 
 Its a simple OpenUNB library with crypto protocol.
 
-###Dependencies
+##Dependencies
 
 - cmake
 - libakrypt (for Magma or Kuznechik) https://github.com/axelkenzo/libakrypt-0.x
 
-###Install
+##Install
 
 ```
 git clone https://github.com/bolt5/OpenUNBcrypto.git
@@ -21,11 +21,17 @@ sudo make install
 
 For the choose crypto algorithm use:
 For AES128
-```cmake -DAES128=ON```
+```
+cmake -DAES128=ON
+```
 
 For MAGMA
-```cmake -DMAGMA=ON```
+```
+cmake -DMAGMA=ON
+```
 
 For KUZNECHIK
-```cmake -DKUZNECHIK=ON```
+```
+cmake -DKUZNECHIK=ON
+```
 
