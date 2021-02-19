@@ -49,22 +49,22 @@ int main() {
     std::cout << "   -DMAGMA for MAGMA" << std::endl;
 #endif
 
-	srand(time(0));
+    srand(time(0));
     uint8_t DevID[] = {0x21, 0x01, 0x01, 0x15, 0x66};
-	encryptInitData initData;
+    encryptInitData initData;
     initData.DevID = DevID;
     initData.DevID_len = sizeof(DevID);
-	initData.K0 = { 0x1, 0x2, 0x3, 0x4, 0x5, 0x6 , 0x7 , 0x8 , 0x9 , 0xA , 0xB , 0xC , 0xD , 0xE , 0xF };
+    initData.K0 = { 0x1, 0x2, 0x3, 0x4, 0x5, 0x6 , 0x7 , 0x8 , 0x9 , 0xA , 0xB , 0xC , 0xD , 0xE , 0xF };
     initData.Na = 1;
-	initData.Ne = { 0x0 };
-	uint16_t payload2 = 0x1182;
+    initData.Ne = { 0x0 };
+    uint16_t payload2 = 0x1182;
     uint48a_t payload6 = {0x11, 0xDA, 0x01, 0xFF, 0x84, 0x55};
 
     init();
 
     time_t startTime = time(0);
 
-	std::cout << "Inited data" << std::endl;
+    std::cout << "Inited data" << std::endl;
     std::cout << " Curret time: " << startTime << std::endl;
     std::cout << " DevID: ";
     for (int i = 0; i < initData.DevID_len; i++) {
@@ -72,89 +72,89 @@ int main() {
     }
     std::cout << std::endl;
 
-	std::cout << " K0: ";
-	for (int i = 0; i < sizeof(initData.K0.data); i++) {
-		printf("%.2X", initData.K0.data[i]);
-	}
-	std::cout << std::endl;
+    std::cout << " K0: ";
+    for (int i = 0; i < sizeof(initData.K0.data); i++) {
+        printf("%.2X", initData.K0.data[i]);
+    }
+    std::cout << std::endl;
 
-	std::cout << " Na: " << initData.Na << std::endl;
-	
-	std::cout << " Ne: ";
-	for (int i = 0; i < sizeof(initData.Ne.data); i++) {
-		printf("%.2X", initData.Ne.data[i]);
-	}
-	std::cout << std::endl;
+    std::cout << " Na: " << initData.Na << std::endl;
 
-	std::cout << " Payload 16 bit: " << std::hex << payload2 << std::endl;
+    std::cout << " Ne: ";
+    for (int i = 0; i < sizeof(initData.Ne.data); i++) {
+        printf("%.2X", initData.Ne.data[i]);
+    }
+    std::cout << std::endl;
 
-	std::cout << " Payload 48 bit: ";
-	for (int i = 0; i < sizeof(payload6.data); i++) {
-		printf("%.2X", payload6.data[i]);
-	}
-	std::cout << std::endl;
+    std::cout << " Payload 16 bit: " << std::hex << payload2 << std::endl;
+
+    std::cout << " Payload 48 bit: ";
+    for (int i = 0; i < sizeof(payload6.data); i++) {
+        printf("%.2X", payload6.data[i]);
+    }
+    std::cout << std::endl;
 
 
     //////////////////////////////////////////////////////////////////////////////////////////////////
     std::cout << std::endl << "Generated data" << std::endl;
     uint128_256_t Ka = getKa(initData.K0, initData.Na);
-	std::cout << " Ka: ";
-	for (int i = 0; i < sizeof(Ka.data); i++) {
-		printf("%.2X", Ka.data[i]);
-	}
-	std::cout << std::endl;
+    std::cout << " Ka: ";
+    for (int i = 0; i < sizeof(Ka.data); i++) {
+        printf("%.2X", Ka.data[i]);
+    }
+    std::cout << std::endl;
 
 
     uint24a_t DevAddr = getDevAddr(Ka, initData.Ne);
-	std::cout << " DevAddr: ";
-	for (int i = 0; i < sizeof(DevAddr.data); i++) {
-		printf("%.2X", DevAddr.data[i]);
-	}
-	std::cout << std::endl;
+    std::cout << " DevAddr: ";
+    for (int i = 0; i < sizeof(DevAddr.data); i++) {
+        printf("%.2X", DevAddr.data[i]);
+    }
+    std::cout << std::endl;
 
 
-	uint128_256_t Km = getKm(Ka, initData.Ne);
-	std::cout << " Km: ";
-	for (int i = 0; i < sizeof(Km.data); i++) {
-		printf("%.2X", Km.data[i]);
-	}
-	std::cout << std::endl;
+    uint128_256_t Km = getKm(Ka, initData.Ne);
+    std::cout << " Km: ";
+    for (int i = 0; i < sizeof(Km.data); i++) {
+        printf("%.2X", Km.data[i]);
+    }
+    std::cout << std::endl;
 
 
-	uint128_256_t Ke = getKe(Ka, initData.Ne);
-	std::cout << " Ke: ";
-	for (int i = 0; i < sizeof(Ke.data); i++) {
-		printf("%.2X", Ke.data[i]);
-	}
-	std::cout << std::endl;
+    uint128_256_t Ke = getKe(Ka, initData.Ne);
+    std::cout << " Ke: ";
+    for (int i = 0; i < sizeof(Ke.data); i++) {
+        printf("%.2X", Ke.data[i]);
+    }
+    std::cout << std::endl;
 
 
-	uint16_t MacPayload2 = cryptoMacPayload16(payload2, Ke, 0);
-	std::cout << " MacPayload 16 bit: " << std::hex << MacPayload2 << std::endl;
+    uint16_t MacPayload2 = cryptoMacPayload16(payload2, Ke, 0);
+    std::cout << " MacPayload 16 bit: " << std::hex << MacPayload2 << std::endl;
 
 
     uint48a_t MacPayload6 = cryptoMacPayload48(payload6, Ke, 0);
-	std::cout << " MacPayload 48 bit: ";
-	for (int i = 0; i < sizeof(MacPayload6.data); i++) {
-		printf("%.2X", MacPayload6.data[i]);
-	}
-	std::cout << std::endl;
+    std::cout << " MacPayload 48 bit: ";
+    for (int i = 0; i < sizeof(MacPayload6.data); i++) {
+        printf("%.2X", MacPayload6.data[i]);
+    }
+    std::cout << std::endl;
 
 
     uint24a_t MIC16 = getMIC16(Km, DevAddr, MacPayload2, 0);
-	std::cout << " MIC 16 bit: ";
-	for (int i = 0; i < sizeof(MIC16.data); i++) {
-		printf("%.2X", MIC16.data[i]);
-	}
-	std::cout << std::endl;
+    std::cout << " MIC 16 bit: ";
+    for (int i = 0; i < sizeof(MIC16.data); i++) {
+        printf("%.2X", MIC16.data[i]);
+    }
+    std::cout << std::endl;
 
 
     uint24a_t MIC48 = getMIC48(Km, DevAddr, MacPayload6, 0);
-	std::cout << " MIC 48 bit: ";
-	for (int i = 0; i < sizeof(MIC48.data); i++) {
-		printf("%.2X", MIC48.data[i]);
-	}
-	std::cout << std::endl;
+    std::cout << " MIC 48 bit: ";
+    for (int i = 0; i < sizeof(MIC48.data); i++) {
+        printf("%.2X", MIC48.data[i]);
+    }
+    std::cout << std::endl;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     std::cout << std::endl << "High level encrypter" << std::endl;

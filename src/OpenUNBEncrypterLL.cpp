@@ -38,25 +38,25 @@ uint128_256_t getKa(uint128_256_t K0, uint16_t Na) {
 
     ret = encCTR(K0, iv, t);
 
-	return ret;
+    return ret;
 }
 
 
 uint24a_t getDevAddr(uint128_256_t Ka, uint24a_t Ne) {
     uint24a_t ret;
-	uint128_256_t tmp;
-	uint128_256_t tmpRet = { 0 };
+    uint128_256_t tmp;
+    uint128_256_t tmpRet = { 0 };
 
-	// 0x01 || Ne || 00..00
-	memset(tmp.data, 0, sizeof(tmp.data));
-	tmp.data[sizeof(tmp.data) - 1] = 0x01;
-	memcpy(tmp.data + sizeof(tmp.data) - sizeof(Ne) - 1, &Ne, sizeof(Ne));
+    // 0x01 || Ne || 00..00
+    memset(tmp.data, 0, sizeof(tmp.data));
+    tmp.data[sizeof(tmp.data) - 1] = 0x01;
+    memcpy(tmp.data + sizeof(tmp.data) - sizeof(Ne) - 1, &Ne, sizeof(Ne));
 
     tmpRet = encECB(Ka, tmp);
-	
-	memcpy(ret.data, tmpRet.data + sizeof(tmpRet.data) - sizeof(ret.data), sizeof(ret.data));
 
-	return ret;
+    memcpy(ret.data, tmpRet.data + sizeof(tmpRet.data) - sizeof(ret.data), sizeof(ret.data));
+
+    return ret;
 }
 
 uint128_256_t getKm(uint128_256_t Ka, uint24a_t Ne) {
@@ -70,7 +70,7 @@ uint128_256_t getKm(uint128_256_t Ka, uint24a_t Ne) {
     uint128_256_t t = {0};
     ret = encCTR(Ka, iv, t);
 
-	return ret;
+    return ret;
 }
 
 uint128_256_t getKe(uint128_256_t Ka, uint24a_t Ne) {
@@ -88,9 +88,9 @@ uint128_256_t getKe(uint128_256_t Ka, uint24a_t Ne) {
 }
 
 uint16_t cryptoMacPayload16(uint16_t macPayload, uint128_256_t Ke, uint16_t Nn) {
-	uint16_t ret;
+    uint16_t ret;
     iv_t iv = {0};
-	uint128_256_t tmpRet = { 0 };
+    uint128_256_t tmpRet = { 0 };
 
     //Nn || 00..00
     memcpy((char*)&iv + sizeof(iv.data) - sizeof(Nn), &Nn, sizeof(Nn));
@@ -100,16 +100,16 @@ uint16_t cryptoMacPayload16(uint16_t macPayload, uint128_256_t Ke, uint16_t Nn) 
 
     tmpRet = encCTR(Ke, iv, t);
 
-	// MSB
+    // MSB
     ret = (tmpRet.data[1] << 8) | (tmpRet.data[0]);
 
-	return ret;
+    return ret;
 }
 
 uint48a_t cryptoMacPayload48(uint48a_t macPayload, uint128_256_t Ke, uint16_t Nn) {
     uint48a_t ret;
     iv_t iv = {0};
-	uint128_256_t tmpRet = { 0 };
+    uint128_256_t tmpRet = { 0 };
 
     // Ne || 00..00
     memcpy((char*)&iv + sizeof(iv.data) - sizeof(Nn), &Nn, sizeof(Nn));
@@ -120,7 +120,7 @@ uint48a_t cryptoMacPayload48(uint48a_t macPayload, uint128_256_t Ke, uint16_t Nn
 
     memcpy(ret.data, tmpRet.data, sizeof(ret.data));
 
-	return ret;
+    return ret;
 }
 
 uint24a_t getMIC16(uint128_256_t Km, uint24a_t DevAddr, uint16_t cryptoMacPayload, uint16_t Nn) {
@@ -269,10 +269,10 @@ uint24a_t getMIC48(uint128_256_t Km, uint24a_t DevAddr, uint48a_t cryptoMacPaylo
 
 /*
 uint24_t getMIC16(uint128_256_t Km, uint24_t DevAddr, uint16_t cryptoMacPayload, uint16_t Nn) {
-	uint128_256_t R;
-	uint128_256_t K1;
-	uint24_t ret = { 0 };
-	bool msb;
+    uint128_256_t R;
+    uint128_256_t K1;
+    uint24_t ret = { 0 };
+    bool msb;
 
     iv_t iv = {0};
 
@@ -281,47 +281,47 @@ uint24_t getMIC16(uint128_256_t Km, uint24_t DevAddr, uint16_t cryptoMacPayload,
     R = aes128Enc(Km, t);
 
 
-	msb = (R.data[sizeof(R.data) - 1] >> 7) & 1;
+    msb = (R.data[sizeof(R.data) - 1] >> 7) & 1;
 
-	// R << 1
+    // R << 1
     for (int i = sizeof(R.data) - 1; i >= 0; i--) {
-		R.data[i] = R.data[i] << 1;
-		if (i != 0)
-			R.data[i] |= (R.data[i - 1] >> 7) & 1;
-	}
+        R.data[i] = R.data[i] << 1;
+        if (i != 0)
+            R.data[i] |= (R.data[i - 1] >> 7) & 1;
+    }
 
-	// if ( MSB1(R) = 1)
-	if (msb) {
-		uint128_256_t B;
-		memset(B.data, 0, sizeof(B.data));
-		B.data[0] = 0b10000111;
+    // if ( MSB1(R) = 1)
+    if (msb) {
+        uint128_256_t B;
+        memset(B.data, 0, sizeof(B.data));
+        B.data[0] = 0b10000111;
 
         for (unsigned int i = 0; i < sizeof(K1.data); i++) {
-			K1.data[i] = R.data[i] ^ B.data[i];
-		}
-	}
-	// if ( MSB1(R) = 0)
-	else {
+            K1.data[i] = R.data[i] ^ B.data[i];
+        }
+    }
+    // if ( MSB1(R) = 0)
+    else {
         for (unsigned int i = 0; i < sizeof(K1.data); i++) {
-			K1.data[i] = R.data[i];
-		}
-	}
+            K1.data[i] = R.data[i];
+        }
+    }
 
-	uint128_256_t P;
-	// 00..00
-	memset(P.data, 0, sizeof(P.data));
-	// DevAddr || 00..00
-	memcpy(P.data + sizeof(P.data) - sizeof(DevAddr), &DevAddr, sizeof(DevAddr));
-	// DevAddr || cryptoMacPayload || 00..00
-	memcpy(P.data + sizeof(P.data) - sizeof(DevAddr) - sizeof(cryptoMacPayload), &cryptoMacPayload, sizeof(cryptoMacPayload));
-	// DevAddr || cryptoMacPayload || Nn || 00..00
-	memcpy(P.data + sizeof(P.data) - sizeof(DevAddr) - sizeof(cryptoMacPayload) - sizeof(Nn), &Nn, sizeof(Nn));
-	// DevAddr || cryptoMacPayload || Nn || 00..00 || 0x10
-	P.data[0] = 0x10;
+    uint128_256_t P;
+    // 00..00
+    memset(P.data, 0, sizeof(P.data));
+    // DevAddr || 00..00
+    memcpy(P.data + sizeof(P.data) - sizeof(DevAddr), &DevAddr, sizeof(DevAddr));
+    // DevAddr || cryptoMacPayload || 00..00
+    memcpy(P.data + sizeof(P.data) - sizeof(DevAddr) - sizeof(cryptoMacPayload), &cryptoMacPayload, sizeof(cryptoMacPayload));
+    // DevAddr || cryptoMacPayload || Nn || 00..00
+    memcpy(P.data + sizeof(P.data) - sizeof(DevAddr) - sizeof(cryptoMacPayload) - sizeof(Nn), &Nn, sizeof(Nn));
+    // DevAddr || cryptoMacPayload || Nn || 00..00 || 0x10
+    P.data[0] = 0x10;
 
     for (unsigned int i = 0; i < sizeof(P.data); i++) {
-		K1.data[i] ^= P.data[i];
-	}
+        K1.data[i] ^= P.data[i];
+    }
 
     t = {0};
     uint128_256_t tmp;
@@ -355,59 +355,59 @@ uint24_t getMIC16(uint128_256_t Km, uint24_t DevAddr, uint16_t cryptoMacPayload,
 #if defined(KUZNECHIK) | defined(MAGMA)
     ret = kzchMgmCMAC(Km, P.data, PSize);
 #endif
-	return ret;
+    return ret;
 }
 
 uint24_t getMIC48(uint128_256_t Km, uint24_t DevAddr, uint48_t cryptoMacPayload, uint16_t Nn) {
-	uint128_256_t R;
-	uint128_256_t K1;
-	uint24_t ret = { 0 };
-	bool msb;
+    uint128_256_t R;
+    uint128_256_t K1;
+    uint24_t ret = { 0 };
+    bool msb;
 
     uint128_256_t tmp = {0};
 #if defined(AES128)
     R = aes128Enc(Km, tmp);
 
 
-	msb = (R.data[sizeof(R.data) - 1] >> 7) & 1;
+    msb = (R.data[sizeof(R.data) - 1] >> 7) & 1;
 
     for (int i = sizeof(R.data) - 1; i >= 0; i--) {
-		R.data[i] = R.data[i] << 1;
-		if (i != 0)
-			R.data[i] |= (R.data[i - 1] >> 7) & 1;
-	}
+        R.data[i] = R.data[i] << 1;
+        if (i != 0)
+            R.data[i] |= (R.data[i - 1] >> 7) & 1;
+    }
 
-	if (msb) {
-		uint128_256_t B;
-		memset(B.data, 0, sizeof(B.data));
-		B.data[0] = 0b10000111;
+    if (msb) {
+        uint128_256_t B;
+        memset(B.data, 0, sizeof(B.data));
+        B.data[0] = 0b10000111;
 
         for (unsigned int i = 0; i < sizeof(K1.data); i++) {
-			K1.data[i] = R.data[i] ^ B.data[i];
-		}
-	}
-	else {
+            K1.data[i] = R.data[i] ^ B.data[i];
+        }
+    }
+    else {
         for (unsigned int i = 0; i < sizeof(K1.data); i++) {
-			K1.data[i] = R.data[i];
-		}
-	}
+            K1.data[i] = R.data[i];
+        }
+    }
 
-	uint128_256_t P;
-	memset(P.data, 0, sizeof(P.data));
-	memcpy(P.data + sizeof(P.data) - sizeof(DevAddr), &DevAddr, sizeof(DevAddr));
-	memcpy(P.data + sizeof(P.data) - sizeof(DevAddr) - sizeof(cryptoMacPayload), &cryptoMacPayload, sizeof(cryptoMacPayload));
-	memcpy(P.data + sizeof(P.data) - sizeof(DevAddr) - sizeof(cryptoMacPayload) - sizeof(Nn), &Nn, sizeof(Nn));
-	P.data[0] = 0x30;
+    uint128_256_t P;
+    memset(P.data, 0, sizeof(P.data));
+    memcpy(P.data + sizeof(P.data) - sizeof(DevAddr), &DevAddr, sizeof(DevAddr));
+    memcpy(P.data + sizeof(P.data) - sizeof(DevAddr) - sizeof(cryptoMacPayload), &cryptoMacPayload, sizeof(cryptoMacPayload));
+    memcpy(P.data + sizeof(P.data) - sizeof(DevAddr) - sizeof(cryptoMacPayload) - sizeof(Nn), &Nn, sizeof(Nn));
+    P.data[0] = 0x30;
 
     for (unsigned int i = 0; i < sizeof(P.data); i++) {
-		K1.data[i] ^= P.data[i];
-	}
+        K1.data[i] ^= P.data[i];
+    }
 
     tmp = aes128Enc(Km, K1);
 
 
     for (unsigned int i = 0; i < sizeof(ret.data); i++)
-		ret.data[i] = tmp.data[sizeof(tmp.data) - sizeof(ret.data) + i];
+        ret.data[i] = tmp.data[sizeof(tmp.data) - sizeof(ret.data) + i];
 
 #endif
 
@@ -432,7 +432,7 @@ uint24_t getMIC48(uint128_256_t Km, uint24_t DevAddr, uint48_t cryptoMacPayload,
     ret = kzchMgmCMAC(Km, P.data, PSize);
 #endif
 
-	return ret;
+    return ret;
 }
 */
 
@@ -458,13 +458,13 @@ uint128_256_t aesCTR(uint128_256_t key, iv_t iv, uint128_256_t data) {
 
 uint128_256_t aesCTR(uint128_256_t key, iv_t iv, uint8_t* data, size_t size) {
 #if defined(AES128) | defined(AES256)
-	struct AES_ctx _key;
-	uint128_256_t ret;
+    struct AES_ctx _key;
+    uint128_256_t ret;
     memcpy(ret.data, data, size);
     AES_init_ctx_iv(&_key, key.data, (uint8_t*)&iv);
     AES_CTR_xcrypt_buffer(&_key, ret.data, size);
 
-	return ret;
+    return ret;
 #else
     return {0};
 #endif
