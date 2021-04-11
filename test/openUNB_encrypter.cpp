@@ -176,9 +176,9 @@ int main() {
     std::cout << " Epoch: " << enc.getEpoch() << std::endl;
     std::cout << " Msg number: " << enc.getMsgNumber() << std::endl;
 
+    std::vector<uint8_t> actReq = enc.activateMsg();
     std::vector<uint8_t> encData16 = enc.encrypt(dIn16);
     std::vector<uint8_t> encData48 = enc.encrypt(dIn48);
-    std::vector<uint8_t> actReq = enc.activateMsg();
 
     std::cout << " Activation request: " ;
     for (int i=0; i<actReq.size(); i++) {

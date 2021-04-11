@@ -12,12 +12,6 @@
 //#define KUZNECHIK
 //#define MAGMA
 
-#if defined(AES128) | defined(AES256)
-#include "aes.h"
-#else
-#include <libakrypt.h>
-#endif 
-
 
 int init();
 

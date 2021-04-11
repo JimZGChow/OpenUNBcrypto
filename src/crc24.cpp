@@ -1,4 +1,5 @@
 #include "crc24.h"
+#include <stdio.h>
 
 #define CRC24_INIT      0xFFFFFFUL
 #define CRC24_POLY      0x5D6DCBUL

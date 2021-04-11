@@ -170,6 +170,7 @@ std::vector<uint8_t> Encrypter::activateMsg() {
     memcpy(ret.data() + sizeof (devAddr24.data), &macPayload16, sizeof (macPayload16));
 
     MIC = getMIC16(_Km, devAddr24, macPayload16, 0);
+
     memcpy(ret.data() + sizeof (_DevAddr.data) + sizeof (macPayload16), MIC.data, sizeof (MIC.data));
 
     return ret;

@@ -1,5 +1,11 @@
 #include "OpenUNBEncrypterLL.h"
 
+#if defined(AES128) | defined(AES256)
+#include "aes.h"
+#else
+#include <libakrypt.h>
+#endif
+
 encryptInitData* _info = nullptr;
 
 uint128_256_t aes128Enc(uint128_256_t key, uint128_256_t data);
@@ -43,8 +49,8 @@ uint128_256_t getKa(uint128_256_t K0, uint16_t Na) {
 
 
 uint24a_t getDevAddr(uint128_256_t Ka, uint24a_t Ne) {
-    uint24a_t ret;
-    uint128_256_t tmp;
+    uint24a_t ret = { 0 };
+    uint128_256_t tmp = { 0 };
     uint128_256_t tmpRet = { 0 };
 
     // 0x01 || Ne || 00..00
@@ -126,8 +132,9 @@ uint48a_t cryptoMacPayload48(uint48a_t macPayload, uint128_256_t Ke, uint16_t Nn
 uint24a_t getMIC16(uint128_256_t Km, uint24a_t DevAddr, uint16_t cryptoMacPayload, uint16_t Nn) {
     uint24a_t ret = { 0 };
 
+    //printf("getMIC16(%x, %x, %x, %x)\n", Km.data[0], DevAddr.ud, cryptoMacPayload, Nn);
 #if defined(AES128) || defined(AES256) || defined(KUZNECHIK)
-    uint128a_t P;
+    uint128a_t P = { 0 };
 #else
     uint64a_t P;
 #endif
@@ -143,8 +150,8 @@ uint24a_t getMIC16(uint128_256_t Km, uint24a_t DevAddr, uint16_t cryptoMacPayloa
     P.data[0] = 0x10;
 #if defined(AES128) || defined(AES256)
 
-    uint128_256_t R;
-    uint128_256_t K1;
+    uint128_256_t R = { 0 };
+    uint128_256_t K1 = { 0 };
     uint128_256_t t = {0};
 
     R = aesECB(Km, t);

@@ -7,6 +7,8 @@
 #include "crc24.h"
 #include "OpenUNBConsts.h"
 
+#include <iostream>
+
 namespace OpenUNB {
 
 class Encrypter {
