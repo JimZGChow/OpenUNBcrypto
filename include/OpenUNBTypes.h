@@ -2,63 +2,41 @@
 #define OPENUNBTYPES_H
 
 #include <stdint.h>
+#include <time.h>
+
+#define AES128
 
 #ifdef AES128
-#define KEYSIZE 128
+#define KEYSIZE         128
+#define KEYSIZE_BYTE    16
+#define IVSIZE          16
 #else
 #define KEYSIZE 256
-#endif
-
-#if defined(MAGMA)
-struct iv_t {
-    uint8_t data[4];
-};
-#elif defined(KUZNECHIK)
-struct iv_t {
-    uint8_t data[8];
-};
+#ifdef MAGMA
+#define IVSIZE          4
 #else
-
-struct iv_t {
-    uint8_t data[16];
-} __attribute__((packed));
+#define IVSIZE          8
 #endif
 
-struct uint256a_t {
-    uint8_t data[32];
-}  __attribute__((packed));
-
-struct uint128a_t {
-    uint8_t data[16];
-} __attribute__((packed));
-
-union uint64a_t {
-    uint8_t data[8];
-    uint64_t ud;
-} __attribute__((packed));
-
-union uint48a_t {
-    uint8_t data[6];
-    uint64_t ud : 48;
-} __attribute__((packed));
-
-union uint24a_t {
-    uint8_t data[3];
-    uint32_t ud : 24;
-} __attribute__((packed));
-
-#if KEYSIZE == 128
-typedef uint128a_t uint128_256_t;
-#else
-typedef uint256a_t uint128_256_t;
 #endif
 
-struct encryptInitData {
+struct encrypt_data_t {
     uint8_t* DevID;
     uint8_t DevID_len;
-    uint128_256_t K0;
+    uint8_t K0[KEYSIZE_BYTE];
     uint16_t Na;
-    uint24a_t Ne;
+    uint32_t Ne;
+
+    uint8_t Ka[KEYSIZE_BYTE];
+    uint32_t dev_addr;
+    uint8_t Km[KEYSIZE_BYTE];
+    uint8_t Ke[KEYSIZE_BYTE];
+
+    uint16_t Nn;
+    time_t init_time;
+
+    uint16_t Nn_last;
+    uint32_t Ne_last;
 } __attribute__((packed));
 
 #endif // OPENUNBTYPES_H
