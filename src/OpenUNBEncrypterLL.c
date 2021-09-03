@@ -15,10 +15,9 @@ void aesCMAC(uint8_t* key, uint8_t* data, size_t size, uint8_t* ret);
 #endif
 
 #if defined(KUZNECHIK) | defined(MAGMA)
-uint128_256_t kzchMgmCTR(uint128_256_t key, iv_t iv, uint128_256_t data);
-uint128_256_t kzchMgmCTR(uint128_256_t key, iv_t iv, uint8_t* data, size_t size);
-uint128_256_t kzchMgmECB(uint128_256_t key, uint128_256_t data);
-uint24a_t kzchMgmCMAC(uint128_256_t key, uint8_t* data, size_t size);
+void kzchMgmCTR(uint8_t* key, uint8_t* iv, uint8_t* data, size_t size, uint8_t* ret);
+void kzchMgmECB(uint8_t* key, uint8_t* data, uint8_t* ret);
+void kzchMgmCMAC(uint8_t* key, uint8_t* data, size_t size, uint8_t* ret);
 #endif
 
 void encECB(uint8_t* key, uint8_t* data, uint8_t* ret);
@@ -36,7 +35,7 @@ void mem_swap(void* mem, size_t n) {
 }
 
 void memcpy_endian(void* dest, const void* src, size_t n) {
-#ifdef AK_BIG_ENDIAN
+#ifndef AK_BIG_ENDIAN
     for (int i=0; i < n; i++) {
         ((char*)dest)[n - 1 - i] = ((char*)src)[i];
     }
@@ -137,11 +136,8 @@ int getMIC(uint8_t* Km, uint32_t DevAddr, uint8_t* dataIn, uint8_t* dataOut, uin
     if (size != 2 && size != 6)
         return -1;
 
-#if defined(AES128) || defined(AES256) || defined(KUZNECHIK)
     uint8_t P[16] = { 0 };
-#else
-    uint8_t P[8] = { 0 };
-#endif
+
     // 00..00
     memset(P, 0, sizeof(P));
     // DevAddr || 00..00
@@ -197,9 +193,9 @@ int getMIC(uint8_t* Km, uint32_t DevAddr, uint8_t* dataIn, uint8_t* dataOut, uin
         dataOut[i] = tmp[i];
 
 #elif defined(KUZNECHIK)
-    ret = kzchMgmCMAC(Km, P.data, 128 / 8);
+    kzchMgmCMAC(Km, P.data, 128 / 8, dataOut);
 #elif defined(MAGMA)
-    ret = kzchMgmCMAC(Km, P.data, 64 / 8);
+    kzchMgmCMAC(Km, P, 64 / 8, dataOut);
 #endif
 
     return 0;
@@ -239,16 +235,13 @@ void aesECB(uint8_t* key, uint8_t* data, uint8_t* ret) {
 //}
 #endif
 
+
 #if defined(KUZNECHIK) | defined(MAGMA)
-uint128_256_t kzchMgmCTR(uint128_256_t key, iv_t iv, uint128_256_t data) {
-    return kzchMgmCTR(key, iv, data.data, sizeof (data.data));
-}
 
-uint128_256_t kzchMgmCTR(uint128_256_t key, iv_t iv, uint8_t* data, size_t size) {
+void kzchMgmCTR(uint8_t* key, uint8_t* iv, uint8_t* data, size_t size, uint8_t* ret) {
 
     struct bckey bkey;
     int error;
-    uint128_256_t ret;
 
 #ifdef KUZNECHIK
     if(( error = ak_bckey_create_kuznechik( &bkey )) != ak_error_ok ) {
@@ -256,21 +249,17 @@ uint128_256_t kzchMgmCTR(uint128_256_t key, iv_t iv, uint8_t* data, size_t size)
     if(( error = ak_bckey_create_magma( &bkey )) != ak_error_ok ) {
 #endif
         ak_error_message( error, __func__, "incorrect initialization of kuznechik secret key context");
-        return {0};
     }
-    if(( error = ak_bckey_set_key( &bkey, key.data, sizeof( key.data))) != ak_error_ok ) {
+    if(( error = ak_bckey_set_key( &bkey, key, KEYSIZE_BYTE)) != ak_error_ok ) {
         ak_error_message( error, __func__, "wrong creation of test key" );
-        return {0};
       }
 
-    ak_bckey_ctr(&bkey, data, ret.data, size, &iv, sizeof(iv));
-    return ret;
+    ak_bckey_ctr(&bkey, data, ret, size, iv, IVSIZE);
 }
 
-uint128_256_t kzchMgmECB(uint128_256_t key, uint128_256_t data) {
+void kzchMgmECB(uint8_t* key, uint8_t* data, uint8_t* ret) {
     struct bckey bkey;
     int error;
-    uint128_256_t ret;
 
 #ifdef KUZNECHIK
     if(( error = ak_bckey_create_kuznechik( &bkey )) != ak_error_ok ) {
@@ -278,21 +267,17 @@ uint128_256_t kzchMgmECB(uint128_256_t key, uint128_256_t data) {
     if(( error = ak_bckey_create_magma( &bkey )) != ak_error_ok ) {
 #endif
         ak_error_message( error, __func__, "incorrect initialization of kuznechik secret key context");
-        return {0};
     }
-    if(( error = ak_bckey_set_key( &bkey, key.data, sizeof( key.data))) != ak_error_ok ) {
+    if(( error = ak_bckey_set_key( &bkey, key, KEYSIZE_BYTE)) != ak_error_ok ) {
         ak_error_message( error, __func__, "wrong creation of test key" );
-        return {0};
       }
 
-    ak_bckey_encrypt_ecb(&bkey, data.data, ret.data, sizeof(ret.data));
-    return ret;
+    ak_bckey_encrypt_ecb(&bkey, data, ret, KEYSIZE_BYTE);
 }
 
-uint24a_t kzchMgmCMAC(uint128_256_t key, uint8_t* data, size_t size) {
+void kzchMgmCMAC(uint8_t* key, uint8_t* data, size_t size, uint8_t* ret) {
     struct bckey bkey;
     int error;
-    uint24a_t ret;
 
 #ifdef KUZNECHIK
     if(( error = ak_bckey_create_kuznechik( &bkey )) != ak_error_ok ) {
@@ -300,14 +285,13 @@ uint24a_t kzchMgmCMAC(uint128_256_t key, uint8_t* data, size_t size) {
     if(( error = ak_bckey_create_magma( &bkey )) != ak_error_ok ) {
 #endif
         ak_error_message( error, __func__, "incorrect initialization of kuznechik secret key context");
-        return {0};
     }
-    if(( error = ak_bckey_set_key( &bkey, key.data, sizeof( key.data))) != ak_error_ok ) {
+    if(( error = ak_bckey_set_key( &bkey, key, KEYSIZE_BYTE)) != ak_error_ok ) {
         ak_error_message( error, __func__, "wrong creation of test key" );
-        return {0};
       }
 
-    ak_bckey_cmac(&bkey, data, size, ret.data, sizeof(ret));
+    //ak_bckey_cmac(&bkey, data, size, ret, sizeof(ret));
+    ak_bckey_cmac(&bkey, data, size, ret, 3);
     return ret;
 }
 #endif
@@ -319,7 +303,7 @@ void encECB(uint8_t* key, uint8_t* data, uint8_t* ret) {
 #endif
 
 #if defined(KUZNECHIK) | defined(MAGMA)
-    ret = kzchMgmECB(key, data);
+    kzchMgmECB(key, data, ret);
 #endif
 }
 
@@ -328,6 +312,6 @@ void encCTR(uint8_t* key, uint8_t* iv, uint8_t* data, size_t size, uint8_t* ret)
     aesCTR(key, iv, data, size, ret);
 #endif
 #if defined(KUZNECHIK) | defined(MAGMA)
-    ret = kzchMgmCTR(key, iv, data);
+    kzchMgmCTR(key, iv, data, size, ret);
 #endif
 }

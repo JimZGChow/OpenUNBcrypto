@@ -2,10 +2,10 @@
 
 project (OpneUNB_chiper VERSION 1.0.0)
 
-OPTION(AES128 "AES128 encrypt" ON)
-OPTION(AES256 "AES256 encrypt" ON)
+OPTION(AES128 "AES128 encrypt" OFF)
+OPTION(AES256 "AES256 encrypt" OFF)
 OPTION(KUZNECHIK "KUZNECHIK encrypt" OFF)
-OPTION(MAGMA "MAGMA encrypt" OFF)
+OPTION(MAGMA "MAGMA encrypt" ON)
 
 include (TestBigEndian)
 TEST_BIG_ENDIAN(IS_BIG_ENDIAN)
@@ -49,7 +49,7 @@ IF(KUZNECHIK)
 
     link_libraries(akrypt)
     link_libraries(akrypt-base)
-    link_libraries(crypto)
+    #link_libraries(crypto)
 
     set(AES256 OFF)
     set(AES128 OFF)
@@ -65,7 +65,7 @@ IF(MAGMA)
 
     link_libraries(akrypt)
     link_libraries(akrypt-base)
-    link_libraries(crypto)
+    #link_libraries(crypto)
 
     set(AES256 OFF)
     set(KUZNECHIK OFF)
@@ -80,10 +80,13 @@ add_library(openUNBCryptLib SHARED  "src/aes.c" "includePrivate/aes.h"
                                     "src/crc24.c" "include/crc24.h"
                                     "include/OpenUNBTypes.h" "include/OpenUNBConsts.h")
 
-include_directories(include/ includePrivate/)
+include_directories(include/ includePrivate/ ../libakrypt-0.x/b ../libakrypt-0.x/source)
 
-add_executable (openUNBCryptTest "test/openUNB_encrypter.c")
-target_link_libraries (openUNBCryptTest LINK_PUBLIC openUNBCryptLib)
+add_executable (openUNBCryptTest1 "test/openUNB_encrypter.c")
+add_executable (openUNBCryptTest2 "test/openUNB_test1.c")
+target_link_libraries (openUNBCryptTest1 LINK_PUBLIC openUNBCryptLib)
+target_link_libraries (openUNBCryptTest2 LINK_PUBLIC openUNBCryptLib)
 
 install(DIRECTORY include/ DESTINATION /usr/include/OpenUNB)
 install(TARGETS openUNBCryptLib DESTINATION /usr/lib)
+

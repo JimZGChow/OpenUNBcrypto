@@ -1,5 +1,6 @@
 #include <OpenUNBEncrypterHL.h>
 
+
 void initEncrypter(struct encrypt_data_t* enc_data) {
     getKa(enc_data->K0, enc_data->Na, enc_data->Ka);
 
@@ -20,15 +21,28 @@ void encodeActivateMsg(struct encrypt_data_t* enc_data, uint8_t* out, time_t tim
 
     uint32_t devAddr24 = 0;
     uint8_t payload[2] = {0};
-    memcpy_endian(payload, &enc_data->Na, 2);
+    uint16_t NaNet = htons(enc_data->Na);
+    memcpy(payload, &NaNet, 2);
     uint8_t MIC[3] = {0};
 
-    devAddr24 = crc24(enc_data->DevID, enc_data->DevID_len);
+    devAddr24 = crc24(enc_data->DevID, sizeof(enc_data->DevID));
+
+    uint32_t devAddr24Net = htonl(devAddr24);
     getMIC(enc_data->Km, devAddr24, payload, MIC, 2, 0);
 
-    memcpy_endian(out, &devAddr24, sizeof(devAddr24));
-    memcpy_endian(out + 3, payload, sizeof (payload));
-    memcpy(out + 3 + sizeof (payload), MIC, sizeof (MIC));
+
+#ifndef AK_BIG_ENDIAN
+    devAddr24Net = devAddr24Net >> 8;
+#endif
+
+    memcpy(out, MIC, sizeof(MIC));
+    //memcpy(out + 3, payload, 2);
+    out[3] = (NaNet >> 8) & 0xFF;
+    out[4] = NaNet & 0xFF;
+    out[5] = (devAddr24Net >> 16) & 0xFF;
+    out[6] = (devAddr24Net >> 8) & 0xFF;
+    out[7] = devAddr24Net & 0xFF;
+    //memcpy(out + 2 + sizeof (MIC), &devAddr24Net, 3);
 }
 
 int encodeData(struct encrypt_data_t* enc_data, uint8_t* in, uint8_t* out, size_t size, time_t time) {
@@ -64,9 +78,17 @@ int encodeData(struct encrypt_data_t* enc_data, uint8_t* in, uint8_t* out, size_
 
     getMIC(enc_data->Km, enc_data->dev_addr, payload, MIC, size, enc_data->Nn);
 
-    memcpy_endian(out, &enc_data->dev_addr, sizeof (enc_data->dev_addr));
-    memcpy(out + 3, payload, size);
-    memcpy(out + 3 + size, MIC, sizeof (MIC));
+    uint32_t devAddr24Net = htonl(enc_data->dev_addr);
+
+#ifndef AK_BIG_ENDIAN
+    devAddr24Net = devAddr24Net >> 8;
+#endif
+
+    memcpy(out, MIC, sizeof (MIC));
+    memcpy(out + sizeof (MIC), payload, size);
+    out[5] = (devAddr24Net >> 16) & 0xFF;
+    out[6] = (devAddr24Net >> 8) & 0xFF;
+    out[7] = devAddr24Net & 0xFF;
 
     return 0;
 }

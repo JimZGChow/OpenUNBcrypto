@@ -1,3 +1,5 @@
+#include <netinet/in.h>
+
 #include <OpenUNBEncrypterLL.h>
 #include <OpenUNBConsts.h>
 
