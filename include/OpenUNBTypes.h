@@ -16,9 +16,9 @@
     #define KEYSIZE_BYTE    (KEYSIZE / 8)
 
     #ifdef MAGMA
-        #define IVSIZE          4
-    #else
         #define IVSIZE          8
+    #else
+        #define IVSIZE          16
     #endif
 
 #endif

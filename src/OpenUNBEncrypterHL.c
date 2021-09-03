@@ -11,7 +11,6 @@ void initEncrypter(struct encrypt_data_t* enc_data) {
 
 void encodeActivateMsg(struct encrypt_data_t* enc_data, uint8_t* out, time_t time) {
 
-
     enc_data->init_time = MS2S(time); // to sec
     enc_data->Ne = 0;
     getKe(enc_data->Ka, enc_data->Ne, enc_data->Ke);

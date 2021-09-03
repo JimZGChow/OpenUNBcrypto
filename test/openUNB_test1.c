@@ -5,6 +5,12 @@
 #include <OpenUNBConsts.h>
 #include <OpenUNBEncrypterLL.h>
 
+void printArray1(uint8_t* arr, size_t size) {
+    for (int i = size - 1; i >= 0; i--) {
+        printf("%.2X", arr[i]);
+    }
+}
+
 void printArray(uint8_t* arr, size_t size) {
     for (int i = size - 1; i >= 0; i--) {
         printf("%.2X", arr[i]);
@@ -38,6 +44,8 @@ void testNa() {
     printf(" K0: 0x");
     printArrayEndian(initData.K0, sizeof(initData.K0));
 
+    uint32_t DevAddr = crc24(initData.DevID, sizeof(initData.DevID));
+    printf(" DevAddr (CRC24): 0x%X\n", DevAddr);
 
     printf("\n");
 
@@ -48,6 +56,15 @@ void testNa() {
     uint8_t act_msg[3 + 2 + 3] = {0};
 
     encodeActivateMsg(&initData, act_msg, 0);
+
+    getKm(initData.Ka, initData.Ne, initData.Km);
+    printf(" Km: 0x");
+    printArrayEndian(initData.Km, sizeof(initData.Km));
+
+    getKe(initData.Ka, initData.Ne, initData.Ke);
+    printf(" Ke: 0x");
+    printArrayEndian(initData.Ke, sizeof(initData.Ke));
+
     printf(" Msg of activation: 0x");
     printArray(act_msg, sizeof(act_msg));
 
@@ -58,6 +75,15 @@ void testNa() {
     initEncrypter(&initData);
 
     encodeActivateMsg(&initData, act_msg, 0);
+
+    getKm(initData.Ka, initData.Ne, initData.Km);
+    printf(" Km: 0x");
+    printArrayEndian(initData.Km, sizeof(initData.Km));
+
+    getKe(initData.Ka, initData.Ne, initData.Ke);
+    printf(" Ke: 0x");
+    printArrayEndian(initData.Ke, sizeof(initData.Ke));
+
     printf(" Msg of activation: 0x");
     printArray(act_msg, sizeof(act_msg));
 }
@@ -154,16 +180,8 @@ void testPacket() {
     printArray(MIC48, sizeof(MIC48));
 }
 
-void printArray1(uint8_t* arr, size_t size) {
-    for (int i = size - 1; i >= 0; i--) {
-        printf("%.2X", arr[i]);
-    }
-}
 
 int main() {
-    int b = 0x01020304;
-    printArray(&b, sizeof(b));
-
     printf("------------------- Na test ------------------- \n");
     printf("-------------------    #1   ------------------- \n");
     testNa();
